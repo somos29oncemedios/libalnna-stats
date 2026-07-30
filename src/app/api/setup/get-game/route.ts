@@ -7,14 +7,30 @@ export async function GET() {
   try {
     const game = await prisma.game.findFirst({
       include: {
-        homeTeam: { include: { players: true } },
-        awayTeam: { include: { players: true } },
+        homeTeam: { 
+          include: { 
+            roster: { 
+              include: { player: true } 
+            } 
+          } 
+        },
+        awayTeam: { 
+          include: { 
+            roster: { 
+              include: { player: true } 
+            } 
+          } 
+        },
         stats: true,
       }
     })
 
-    return NextResponse.json({ success: true, game })
-  } catch (error) {
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
+    if (!game) {
+      return NextResponse.json({ error: 'No games found' }, { status: 404 })
+    }
+
+    return NextResponse.json(game)
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
